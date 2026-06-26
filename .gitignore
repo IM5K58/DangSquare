@@ -1,0 +1,21 @@
+# 루트 공통 ignore (하위 backend/.gitignore, frontend/.gitignore 와 함께 동작)
+
+# 환경변수
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# 로그
+*.log
+
+# 교체 전 Vite 백업 (확인 후 삭제 가능)
+frontend_old_vite/
