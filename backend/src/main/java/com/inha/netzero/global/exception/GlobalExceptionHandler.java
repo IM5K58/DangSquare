@@ -1,4 +1,4 @@
-package com.inha.netzero.common.exception;
+package com.inha.netzero.global.exception;
 
 import java.time.Instant;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package com.inha.netzero.common.web;
+package com.inha.netzero.global.web;
 
 import java.time.Instant;
 import java.util.Map;

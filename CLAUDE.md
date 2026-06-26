@@ -29,19 +29,26 @@
 └── CLAUDE.md
 ```
 
-**도메인형 패키지 구조** (`com.inha.netzero.*`):
+**패키지 구조**: 최상위는 `global`(공통 인프라)과 `domain`(도메인들) 둘로 나눈다.
+각 도메인 패키지 안에 계층 패키지(`controller / service / repository / entity / dto`)를 둔다.
 ```
 com.inha.netzero
-├── global/       # config, response(ApiResponse/PageResponse), exception(handler/error code), security(JWT)
-├── auth/         # 회원가입/로그인, JWT 발급
-├── user/         # 사용자/온보딩/강아지(Dog)/위치/고스트모드
-├── walk/         # 산책 매칭: 근처 사람, 지도 핀, 친구(FriendRequest)
-├── chat/         # 1:1 채팅(ChatRoom/ChatMessage), STOMP
-├── market/       # 중고거래(MarketItem/Image/Heart)
-├── marketplace/  # 저탄소 마켓(MarketplaceProduct)
-└── ai/           # LLM/Bedrock: BedrockClient, LlmService, PromptTemplates
+├── global/                 # 공통 인프라
+│   ├── config/             # CorsConfig, JpaConfig, (SecurityConfig 예정)
+│   ├── entity/             # BaseTimeEntity (공통 감사 필드)
+│   ├── exception/          # GlobalExceptionHandler, (ErrorCode 예정)
+│   ├── web/                # HealthController
+│   └── (response, security 예정)
+└── domain/
+    ├── user/               # 사용자/온보딩/강아지(Dog)
+    ├── walk/               # 산책 매칭: 근처 사람, 지도 핀, 친구(FriendRequest)
+    ├── chat/               # 1:1 채팅(ChatRoom/ChatMessage), STOMP
+    ├── market/             # 중고거래(MarketItem/Image/Heart)
+    ├── marketplace/        # 저탄소 마켓(MarketplaceProduct)
+    └── (auth, ai 예정)
+        └── <도메인>/{controller, service, repository, entity, dto}
 ```
-각 도메인은 `controller / service / repository / domain(entity) / dto` 하위로 나눈다.
+예: `com.inha.netzero.domain.user.entity.User`, `com.inha.netzero.domain.market.controller.MarketController`.
 
 ---
 
