@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.inha.netzero.ai.client.BedrockClient;
 import com.inha.netzero.ai.dto.DogProfile;
 import com.inha.netzero.ai.dto.ProductCatalogItem;
 import com.inha.netzero.ai.dto.RecommendationResult;
 import com.inha.netzero.ai.dto.SellDraftResult;
 import com.inha.netzero.ai.prompt.PromptTemplates;
+import com.inha.netzero.domain.ai.client.BedrockClient;
 import com.inha.netzero.domain.market.entity.MarketCategory;
 
 /**
