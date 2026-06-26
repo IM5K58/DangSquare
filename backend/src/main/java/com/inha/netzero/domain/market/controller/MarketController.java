@@ -1,5 +1,8 @@
 package com.inha.netzero.domain.market.controller;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
@@ -15,11 +18,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.inha.netzero.ai.dto.SellDraftResult;
+import com.inha.netzero.ai.service.LlmService;
 import com.inha.netzero.domain.market.dto.HeartToggleResponse;
 import com.inha.netzero.domain.market.dto.MarketItemCreateRequest;
 import com.inha.netzero.domain.market.dto.MarketItemDetailResponse;
 import com.inha.netzero.domain.market.dto.MarketItemListResponse;
+import com.inha.netzero.domain.market.dto.SellDraftResponse;
 import com.inha.netzero.domain.market.entity.MarketCategory;
 import com.inha.netzero.domain.market.entity.MarketItemStatus;
 import com.inha.netzero.domain.market.entity.TradeType;
@@ -34,9 +41,11 @@ import jakarta.validation.Valid;
 public class MarketController {
 
     private final MarketService marketService;
+    private final LlmService llmService;
 
-    public MarketController(MarketService marketService) {
+    public MarketController(MarketService marketService, LlmService llmService) {
         this.marketService = marketService;
+        this.llmService = llmService;
     }
 
     @GetMapping("/items")
@@ -69,5 +78,29 @@ public class MarketController {
             @PathVariable Long id,
             @AuthenticationPrincipal Long userId) {
         return ApiResponse.success(marketService.toggleHeart(id, userId));
+    }
+
+    /** LLM-1: 판매글 자동작성 초안. LLM 실패 시 빈 초안 반환(글쓰기 비차단). */
+    @PostMapping("/items/draft")
+    public ApiResponse<SellDraftResponse> createDraft(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam("image") MultipartFile image,
+            @RequestParam(value = "keywords", required = false) String keywords) throws IOException {
+        byte[] imageBytes = image.getBytes();
+        String format = resolveImageFormat(image.getContentType());
+        List<String> keywordList = (keywords != null && !keywords.isBlank())
+                ? Arrays.asList(keywords.split(","))
+                : List.of();
+
+        SellDraftResult result = llmService.generateSellDraft(imageBytes, format, keywordList);
+        return ApiResponse.success(SellDraftResponse.from(result), "추천 가격은 참고용입니다.");
+    }
+
+    private String resolveImageFormat(String contentType) {
+        if (contentType == null) return "jpeg";
+        if (contentType.contains("png")) return "png";
+        if (contentType.contains("gif")) return "gif";
+        if (contentType.contains("webp")) return "webp";
+        return "jpeg";
     }
 }

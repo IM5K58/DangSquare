@@ -49,6 +49,10 @@ dependencies {
 	implementation 'software.amazon.awssdk:bedrockruntime'
 	implementation 'software.amazon.awssdk:s3'
 
+	// JSON 파싱 (LlmService). spring-boot-starter-webmvc가 tools.jackson으로 이동했으나
+	// compile classpath에 com.fasterxml.jackson 노출이 없으므로 명시 추가.
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+
 	// DB drivers
 	runtimeOnly 'org.postgresql:postgresql'
 	runtimeOnly 'com.h2database:h2'
