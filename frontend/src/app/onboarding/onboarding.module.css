@@ -1,0 +1,812 @@
+@font-face {
+  font-family: 'Gumi Romance';
+  src: url('/fonts/Gumi Romance.ttf') format('truetype'),
+       url('/fonts/Gumi Romance.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f3f6f5;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  padding: 16px;
+}
+
+.card {
+  width: 100%;
+  max-width: 450px;
+  height: 100vh;
+  max-height: 850px;
+  background-color: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(14, 112, 96, 0.08);
+}
+
+@media (max-width: 480px) {
+  .card {
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+  .container {
+    padding: 0;
+  }
+}
+
+/* --- Splash Screen --- */
+.splash {
+  flex: 1;
+  background-color: #0e7060;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  color: #ffffff;
+  text-align: center;
+  animation: fadeIn 0.6s ease-out;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.splashHeader {
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0 24px;
+  z-index: 2;
+}
+
+.splashSubtitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: -0.5px;
+  opacity: 0;
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.2s;
+}
+
+.splashLogo {
+  font-family: 'Gumi Romance', sans-serif;
+  font-size: 44px;
+  font-weight: normal;
+  letter-spacing: -0.5px;
+  opacity: 0;
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.4s;
+}
+
+.mascotContainer {
+  position: absolute;
+  bottom: 0;
+  width: 320px;
+  height: 320px;
+  opacity: 0;
+  animation: popIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: 0.6s;
+  z-index: 1;
+}
+
+.mascotImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: gentleFloat 4s ease-in-out infinite;
+}
+
+/* --- Form Steps --- */
+.stepWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Progress Bar */
+.progressContainer {
+  margin-bottom: 32px;
+}
+
+.progressHeader {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0e7060;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.progressBarBackground {
+  width: 100%;
+  height: 6px;
+  background-color: #e6ecea;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background-color: #0e7060;
+  border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Step Content */
+.contentArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.stepTitle {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0e7060;
+  line-height: 1.35;
+  margin-bottom: 40px;
+  white-space: pre-line;
+  letter-spacing: -0.5px;
+}
+
+.gumiTitle {
+  font-family: 'Gumi Romance', sans-serif;
+  font-size: 26px;
+  font-weight: normal;
+  color: #0e7060;
+  line-height: 1.35;
+  margin-bottom: 40px;
+  white-space: pre-line;
+  letter-spacing: -0.5px;
+}
+
+/* Input Fields */
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.inputLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #929a99;
+}
+
+.textInput {
+  border: none;
+  border-bottom: 2px solid #e1e6e5;
+  padding: 12px 4px;
+  font-size: 17px;
+  font-weight: 500;
+  color: #171d1c;
+  outline: none;
+  background: transparent;
+  transition: border-color 0.25s ease;
+}
+
+.textInput::placeholder {
+  color: #b9c1bf;
+  font-weight: 400;
+}
+
+.textInput:focus {
+  border-color: #0e7060;
+}
+
+/* Gender Selection Button Group */
+.genderGroup {
+  display: flex;
+  gap: 12px;
+}
+
+.genderButton {
+  flex: 1;
+  height: 52px;
+  border: 1px solid #e1e6e5;
+  background-color: #ffffff;
+  border-radius: 26px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #727a78;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.genderButton:hover {
+  background-color: #f7faf9;
+  border-color: #cdd4d2;
+}
+
+.genderButtonSelected {
+  border-color: #0e7060;
+  background-color: #e6f4f1;
+  color: #0e7060;
+}
+
+.genderButtonSelected:hover {
+  background-color: #d8edf1;
+}
+
+/* Dropdown */
+.selectWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.selectInput {
+  width: 100%;
+  height: 52px;
+  border: 1px solid #e1e6e5;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 0 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #171d1c;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  transition: all 0.25s ease;
+}
+
+.selectInput:focus {
+  border-color: #0e7060;
+  box-shadow: 0 0 0 3px rgba(14, 112, 96, 0.15);
+}
+
+.selectArrow {
+  position: absolute;
+  right: 16px;
+  pointer-events: none;
+  font-size: 12px;
+  color: #727a78;
+  transition: transform 0.25s ease;
+}
+
+.selectInput:focus + .selectArrow {
+  transform: rotate(180deg);
+  color: #0e7060;
+}
+
+/* Custom Modal or Bottom Sheet for Dog Breed Selection */
+.breedBottomSheetBackdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.breedBottomSheet {
+  background-color: #ffffff;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 24px;
+  max-height: 70%;
+  display: flex;
+  flex-direction: column;
+  z-index: 101;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.1);
+  animation: slideUpBottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sheetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sheetTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #171d1c;
+}
+
+.sheetCloseButton {
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: #727a78;
+  cursor: pointer;
+}
+
+.breedList {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 4px;
+}
+
+.breedItem {
+  padding: 14px 16px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #2e3533;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: left;
+  background: none;
+  border: none;
+}
+
+.breedItem:hover {
+  background-color: #f3f6f5;
+}
+
+.breedItemActive {
+  background-color: #e6f4f1;
+  color: #0e7060;
+  font-weight: 600;
+}
+
+/* Action Button */
+.buttonWrapper {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.primaryButton {
+  width: 100%;
+  height: 54px;
+  border: none;
+  border-radius: 27px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  background-color: #0e7060;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(14, 112, 96, 0.2);
+}
+
+.primaryButton:hover {
+  background-color: #0b594c;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(14, 112, 96, 0.3);
+}
+
+.primaryButton:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(14, 112, 96, 0.2);
+}
+
+.primaryButtonDisabled {
+  background-color: #0e7060;
+  opacity: 0.3;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.primaryButtonDisabled:hover {
+  background-color: #0e7060;
+  transform: none;
+  box-shadow: none;
+}
+
+/* --- 4/4 Onboarding Complete Step --- */
+.completeContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 12px;
+}
+
+.emojiBadge {
+  font-size: 64px;
+  margin-bottom: 24px;
+  animation: floatEmoji 3s ease-in-out infinite;
+}
+
+.completeTitle {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0e7060;
+  margin-bottom: 12px;
+}
+
+.completeDescription {
+  font-size: 15px;
+  color: #727a78;
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+
+.summaryCard {
+  background-color: #f7faf9;
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px dashed rgba(14, 112, 96, 0.2);
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.summaryLabel {
+  color: #929a99;
+  font-weight: 500;
+}
+
+.summaryValue {
+  color: #2e3533;
+  font-weight: 600;
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes gentleFloat {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+@keyframes floatEmoji {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.05);
+  }
+}
+
+/* --- Step 3: Personality Selection Card Styles --- */
+.subtitle {
+  font-size: 15px;
+  color: #727a78;
+  margin-top: -30px;
+  margin-bottom: 32px;
+  white-space: pre-line;
+}
+
+.personalityList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.personalityCard {
+  background-color: #ffffff;
+  border: 1px solid #e1e6e5;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  text-align: left;
+}
+
+.personalityCard:hover {
+  background-color: #fafcfb;
+  border-color: #cdd4d2;
+}
+
+.personalityCardSelected {
+  border-color: #ff9f1c !important;
+  background-color: #fffbf4 !important;
+  box-shadow: 0 4px 12px rgba(255, 159, 28, 0.08);
+}
+
+.radioOuter {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #d1d5db;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 18px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  background-color: #ffffff;
+}
+
+.radioOuterSelected {
+  border-color: #ff9f1c;
+}
+
+.radioInner {
+  width: 12px;
+  height: 12px;
+  background-color: #ff9f1c;
+  border-radius: 50%;
+  transform: scale(0);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.radioInnerActive {
+  transform: scale(1);
+}
+
+.cardIcon {
+  font-size: 26px;
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cardTextContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2e3533;
+}
+
+.cardDesc {
+  font-size: 13px;
+  color: #929a99;
+}
+
+/* --- Step 4: Profile Upload & Completion Styles --- */
+.completeWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 32px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.avatarContainer {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background-color: #f0f4f3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  margin-bottom: 40px;
+  transition: all 0.25s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.avatarContainer:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 28px rgba(14, 112, 96, 0.08);
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  background-color: #f0f4f3;
+}
+
+.guideCard {
+  background-color: #ffffff;
+  border: 1px solid #eef2f1;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  border-radius: 20px;
+  padding: 20px 24px;
+  width: 100%;
+  text-align: center;
+  margin-top: 24px;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.guideTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0e7060;
+}
+
+.guideDesc {
+  font-size: 13px;
+  color: #727a78;
+  line-height: 1.5;
+}
+
+.indicatorDots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #e2e8e7;
+  transition: background-color 0.25s ease;
+}
+
+.dotActive {
+  background-color: #0e7060;
+}
+
+/* Bottom Sheet Action Sheet Menu */
+.actionSheetBackdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.35);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
+  animation: fadeIn 0.2s ease-out;
+  padding: 12px;
+}
+
+.actionSheetContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  animation: slideUpBottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1001;
+}
+
+.actionSheetGroup {
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 13px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.actionButton {
+  width: 100%;
+  padding: 16px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 17px;
+  font-weight: 500;
+  color: #007aff;
+  cursor: pointer;
+  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.actionButton:last-child {
+  border-bottom: none;
+}
+
+.actionButton:active {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.actionButtonDestructive {
+  color: #ff3b30;
+}
+
+.actionButtonCancel {
+  background-color: #ffffff;
+  border-radius: 13px;
+  font-weight: 600;
+  color: #007aff;
+  border: none;
+  padding: 16px;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.actionButtonCancel:active {
+  background-color: #f2f2f7;
+}
+
+.actionIcon {
+  font-size: 20px;
+  color: #8e8e93;
+}

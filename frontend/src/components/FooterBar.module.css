@@ -1,0 +1,76 @@
+.footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 64px;
+  background-color: #ffffff;
+  border-top: 1px solid #F3F4F6;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 50;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.02);
+  padding-bottom: env(safe-area-inset-bottom); /* iOS 노치 대응 */
+  box-sizing: border-box;
+}
+
+.tabItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #9CA3AF; /* 기본 비활성 색상 */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 4px;
+  padding: 0;
+  outline: none;
+}
+
+.tabItem:hover {
+  color: #6B7280;
+}
+
+.tabItemActive {
+  color: #0e7060; /* 활성화 시 브랜드 청록색 */
+}
+
+.tabItemActive:hover {
+  color: #0e7060;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.tabItem:hover .iconWrapper {
+  transform: translateY(-2px);
+}
+
+.tabItemActive .iconWrapper {
+  transform: scale(1.05);
+}
+
+.tabLabel {
+  font-size: 11px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  line-height: 16px;
+  text-align: center;
+  transition: font-weight 0.15s ease;
+}
+
+.tabItemActive .tabLabel {
+  font-weight: 700;
+}
