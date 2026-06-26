@@ -1,6 +1,5 @@
 package com.inha.netzero.ai.client;
 
-import java.time.Duration;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -8,13 +7,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
 import software.amazon.awssdk.services.bedrockruntime.model.ContentBlock;
 import software.amazon.awssdk.services.bedrockruntime.model.ConversationRole;
 import software.amazon.awssdk.services.bedrockruntime.model.ConverseRequest;
+import software.amazon.awssdk.services.bedrockruntime.model.InferenceConfiguration;
 import software.amazon.awssdk.services.bedrockruntime.model.ImageBlock;
 import software.amazon.awssdk.services.bedrockruntime.model.ImageFormat;
 import software.amazon.awssdk.services.bedrockruntime.model.ImageSource;
@@ -33,16 +31,18 @@ public class BedrockClient {
 
     private final String modelId;
     private final BedrockRuntimeClient client;
+    private final int maxTokens;
+    private final float temperature;
 
     public BedrockClient(
+            BedrockRuntimeClient client,
             @Value("${app.bedrock.model-id}") String modelId,
-            @Value("${app.bedrock.region}") String region) {
+            @Value("${app.bedrock.max-tokens}") int maxTokens,
+            @Value("${app.bedrock.temperature}") float temperature) {
+        this.client = client;
         this.modelId = modelId;
-        this.client = BedrockRuntimeClient.builder()
-                .region(Region.of(region))
-                .credentialsProvider(DefaultCredentialsProvider.create())
-                .overrideConfiguration(c -> c.apiCallTimeout(Duration.ofSeconds(8)))
-                .build();
+        this.maxTokens = maxTokens;
+        this.temperature = temperature;
     }
 
     /**
@@ -58,6 +58,7 @@ public class BedrockClient {
                             .role(ConversationRole.USER)
                             .content(ContentBlock.fromText(userPrompt))
                             .build())
+                    .inferenceConfig(inferenceConfiguration())
                     .build();
             return extractText(client.converse(request));
         } catch (Exception e) {
@@ -85,6 +86,7 @@ public class BedrockClient {
                             .role(ConversationRole.USER)
                             .content(imageContent, ContentBlock.fromText(userPrompt))
                             .build())
+                    .inferenceConfig(inferenceConfiguration())
                     .build();
             return extractText(client.converse(request));
         } catch (Exception e) {
@@ -99,5 +101,12 @@ public class BedrockClient {
                 .map(ContentBlock::text)
                 .findFirst()
                 .orElse(null);
+    }
+
+    private InferenceConfiguration inferenceConfiguration() {
+        return InferenceConfiguration.builder()
+                .maxTokens(maxTokens)
+                .temperature(temperature)
+                .build();
     }
 }
