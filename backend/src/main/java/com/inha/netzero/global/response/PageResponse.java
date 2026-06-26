@@ -36,6 +36,10 @@ public class PageResponse<T> {
                 page.hasNext());
     }
 
+    public static <T> PageResponse<T> from(Page<T> page) {
+        return of(page);
+    }
+
     public List<T> getContent() {
         return content;
     }
