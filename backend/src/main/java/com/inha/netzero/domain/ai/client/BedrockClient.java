@@ -1,8 +1,7 @@
 package com.inha.netzero.domain.ai.client;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +29,8 @@ import software.amazon.awssdk.services.bedrockruntime.model.SystemContentBlock;
 @Component
 public class BedrockClient {
 
+    private static final Logger log = LoggerFactory.getLogger(BedrockClient.class);
+
     private final BedrockRuntimeClient client;
     private final String modelId;
     private final int maxTokens;
@@ -47,7 +48,20 @@ public class BedrockClient {
 
     /** 텍스트 전용 Converse. 시스템 지시 + 유저 프롬프트 → 모델 응답 텍스트. */
     public String converse(String systemPrompt, String userText) {
-        return converse(systemPrompt, ContentBlock.fromText(userText));
+        return converseText(systemPrompt, userText);
+    }
+
+    /**
+     * 텍스트 전용 Converse 호출.
+     * @return 모델 텍스트 응답, 실패 시 null
+     */
+    public String converseText(String systemPrompt, String userPrompt) {
+        try {
+            return converse(systemPrompt, ContentBlock.fromText(userPrompt));
+        } catch (Exception e) {
+            log.warn("Bedrock converseText failed: {}", e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -57,13 +71,18 @@ public class BedrockClient {
      * @param imageFormat {@code "jpeg"} / {@code "png"} 등
      */
     public String converseWithImage(String systemPrompt, String userText, byte[] imageBytes, String imageFormat) {
-        ImageBlock image = ImageBlock.builder()
-                .format(ImageFormat.fromValue(normalizeFormat(imageFormat)))
-                .source(ImageSource.fromBytes(SdkBytes.fromByteArray(imageBytes)))
-                .build();
-        return converse(systemPrompt,
-                ContentBlock.fromImage(image),
-                ContentBlock.fromText(userText));
+        try {
+            ImageBlock image = ImageBlock.builder()
+                    .format(ImageFormat.fromValue(normalizeFormat(imageFormat)))
+                    .source(ImageSource.fromBytes(SdkBytes.fromByteArray(imageBytes)))
+                    .build();
+            return converse(systemPrompt,
+                    ContentBlock.fromImage(image),
+                    ContentBlock.fromText(userText));
+        } catch (Exception e) {
+            log.warn("Bedrock converseWithImage failed: {}", e.getMessage());
+            return null;
+        }
     }
 
     private String converse(String systemPrompt, ContentBlock... userContent) {
@@ -84,14 +103,13 @@ public class BedrockClient {
         return extractText(response);
     }
 
-    /** 응답 메시지의 텍스트 블록만 이어붙여 반환. */
+    /** 응답 메시지의 첫 텍스트 블록을 반환한다. */
     private String extractText(ConverseResponse response) {
-        List<ContentBlock> blocks = response.output().message().content();
-        return blocks.stream()
+        return response.output().message().content().stream()
+                .filter(content -> content.text() != null)
                 .map(ContentBlock::text)
-                .filter(text -> text != null)
-                .collect(Collectors.joining())
-                .trim();
+                .findFirst()
+                .orElse(null);
     }
 
     private String normalizeFormat(String imageFormat) {
