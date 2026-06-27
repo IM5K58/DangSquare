@@ -323,7 +323,7 @@ export default function WalkPage() {
         
         {/* 1. Header */}
         <header className={styles.headerBlock}>
-          <div className={styles.logoRow}>
+          <div className={styles.logoRow} onClick={() => router.push("/")} style={{ cursor: "pointer" }}>
             <div className={styles.logoText}>Dangsquare</div>
           </div>
           
