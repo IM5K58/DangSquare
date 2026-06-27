@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./cart.module.css";
+import FooterBar from "@/components/FooterBar";
 import { 
   getCartItems, 
   updateCartItemQuantity, 
@@ -343,6 +344,9 @@ export default function CartPage() {
             </div>
           </>
         )}
+
+        {/* Footer Bar */}
+        <FooterBar activeTab="market" />
 
         {/* 커스텀 알림 모달 */}
         {customAlert && (

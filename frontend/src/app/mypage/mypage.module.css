@@ -984,6 +984,92 @@
   pointer-events: none;
 }
 
+/* --- 내 반려견 친구들 목록 스타일 --- */
+.friendLoading {
+  padding: 10px 20px;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.friendEmpty {
+  padding: 20px;
+  color: #9ca3af;
+  font-size: 13px;
+  text-align: center;
+  align-self: stretch;
+  background-color: #ffffff;
+  border-radius: 16px;
+  margin: 0 20px;
+  border: 1px dashed #e5e7eb;
+}
+
+.friendListScroll {
+  display: flex;
+  gap: 16px;
+  padding: 10px 20px;
+  overflow-x: auto;
+  align-self: stretch;
+  width: calc(100% - 40px);
+}
+
+.friendListScroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.friendListScroll::-webkit-scrollbar-thumb {
+  background: rgba(15, 118, 110, 0.15);
+  border-radius: 2px;
+}
+
+.friendItemCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.friendItemCard:active {
+  transform: scale(0.92);
+}
+
+.friendAvatarWrapper {
+  position: relative;
+}
+
+.friendAvatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  background-color: #ffffff;
+}
+
+.friendOnlineDot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #10b981;
+  border: 2px solid #ffffff;
+}
+
+.friendName {
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  max-width: 64px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 
 
 

@@ -7,6 +7,8 @@ import {
   healthApi,
   userApi,
   walkApi,
+  chatApi,
+  friendApi,
   type MapUser,
   type NearbyUser,
 } from "@/lib/api";
@@ -94,6 +96,9 @@ export default function WalkPage() {
   
   // 가까운 견주 목록 필터 ("all" | "possible" | "resting")
   const [filterType, setFilterType] = useState<"all" | "possible" | "resting">("all");
+
+  // 알림 뱃지 활성화 상태
+  const [hasNotifications, setHasNotifications] = useState(false);
 
   // 모달 제어 상태
   const [showStatusSheet, setShowStatusSheet] = useState(false); // 내 상태 설정 모달
@@ -219,11 +224,15 @@ export default function WalkPage() {
     const tick = async () => {
       try {
         await userApi.updateLocation(latitude, longitude);
-        const [nearby, mapUsers] = await Promise.all([
+        const [nearby, mapUsers, requests] = await Promise.all([
           walkApi.nearby(2000),
           walkApi.mapUsers(2000),
+          friendApi.getReceivedRequests().catch(() => []),
         ]);
-        if (!cancelled) setUsers(mergeWalkUsers(nearby, mapUsers));
+        if (!cancelled) {
+          setUsers(mergeWalkUsers(nearby, mapUsers));
+          setHasNotifications(requests.length > 0);
+        }
       } catch (e) {
         if (e instanceof ApiError && e.status === 401) {
           router.replace("/onboarding");
@@ -289,13 +298,34 @@ export default function WalkPage() {
     });
   };
 
-  // 개별 견주 산책 요청 보내기
-  const handleRequestWalk = (userName: string, e?: React.MouseEvent) => {
+  // 개별 견주 친구 신청 보내기 (정식 백엔드 친구 요청 전송)
+  const handleRequestWalk = async (userIdStr: string, userName: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation(); // 목록 클릭 이벤트 전파 방지
-    setCustomAlert({
-      message: `${userName} 견주님께 산책 요청을 보냈습니다!\n상대방이 수락하면 채팅방이 개설됩니다. ⚡`,
-      type: "success"
-    });
+    
+    const targetUserId = Number(userIdStr);
+    if (isNaN(targetUserId)) {
+      // Mock 유저인 경우 (숫자 ID 가 아닌 경우) 데모 경고 처리
+      setCustomAlert({
+        message: `${userName} 견주님은 가상 회원입니다. 실제 회원에게 친구 신청을 해 주세요! 🐶`,
+        type: "warning"
+      });
+      return;
+    }
+
+    try {
+      // 1. 백엔드에 친구 요청 발송
+      await friendApi.sendRequest(targetUserId);
+      setCustomAlert({
+        message: `${userName} 견주님께 친구 신청을 보냈습니다! ⚡\n상대방이 수락하면 내 친구 목록에 등록됩니다.`,
+        type: "success"
+      });
+    } catch (err) {
+      console.error("Failed to send friend request to user", err);
+      setCustomAlert({
+        message: "친구 신청 전송에 실패했습니다. 다시 시도해 주세요.",
+        type: "warning"
+      });
+    }
   };
 
   // 지도 또는 프로필 칩에서 선택 시 핸들러
@@ -328,6 +358,17 @@ export default function WalkPage() {
           </div>
           
           <div className={styles.headerActions}>
+            {/* 메시지 아이콘 */}
+            <button 
+              type="button" 
+              className={styles.iconBtn}
+              onClick={() => router.push("/chat")}
+              aria-label="메시지함 열기"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </button>
             {/* 검색 아이콘 */}
             <button 
               type="button" 
@@ -344,13 +385,14 @@ export default function WalkPage() {
             <button 
               type="button" 
               className={styles.iconBtn}
-              onClick={() => handleFeatureAlert("알림")}
+              onClick={() => router.push("/notifications")}
+              aria-label="알림함 열기"
             >
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.3">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
-              <span className={styles.alarmDot}></span>
+              {hasNotifications && <span className={styles.alarmDot}></span>}
             </button>
 
             {/* 개발자 / 백엔드 상태 모달 버튼 */}
@@ -524,9 +566,9 @@ export default function WalkPage() {
                   <button 
                     type="button" 
                     className={styles.requestBtn}
-                    onClick={(e) => handleRequestWalk(user.name, e)}
+                    onClick={(e) => handleRequestWalk(user.id, user.name, e)}
                   >
-                    산책요청
+                    친구신청
                   </button>
                 </div>
               ))}
@@ -602,20 +644,49 @@ export default function WalkPage() {
                 </div>
               )}
 
-              {/* 산책 요청 액션 버튼 */}
-              <button 
-                type="button" 
-                className={styles.detailActionBtn}
-                onClick={() => {
-                  handleRequestWalk(activeUser.name);
-                  setActiveUserId(null);
-                }}
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{ marginRight: 2 }}>
-                  <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z"/>
-                </svg>
-                산책요청
-              </button>
+              {/* 친구신청 & 1:1 메시지 액션 버튼 2개 가로 배치 */}
+              <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+                {/* 1. 1:1 메시지 단추 (상시 발송) */}
+                <button 
+                  type="button" 
+                  className={styles.detailActionBtn}
+                  style={{ flex: 1, backgroundColor: "#ffffff", color: "#0f766e", border: "1.5px solid #0f766e" }}
+                  onClick={async () => {
+                    try {
+                      const res = await chatApi.createRoom(Number(activeUser.id));
+                      setActiveUserId(null);
+                      router.push(`/chat/${res.roomId}`);
+                    } catch (err) {
+                      console.error("Failed to open chat room", err);
+                      setCustomAlert({ message: "대화방을 열지 못했습니다.", type: "warning" });
+                    }
+                  }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  1:1 메시지
+                </button>
+
+                {/* 2. 친구 신청 단추 */}
+                <button 
+                  type="button" 
+                  className={styles.detailActionBtn}
+                  style={{ flex: 1 }}
+                  onClick={() => {
+                    handleRequestWalk(activeUser.id, activeUser.name);
+                    setActiveUserId(null);
+                  }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="8.5" cy="7" r="4" />
+                    <line x1="20" y1="8" x2="20" y2="14" />
+                    <line x1="23" y1="11" x2="17" y2="11" />
+                  </svg>
+                  친구신청
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, consumeAuthFromQuery } from "@/lib/auth";
-import { userApi } from "@/lib/api";
+import { userApi, friendApi } from "@/lib/api";
 import styles from "./dashboard.module.css";
 import FooterBar from "@/components/FooterBar";
 
@@ -32,6 +32,9 @@ export default function Home() {
   // 에코 라이프 웰컴 배너 표시 상태
   const [showEcoBanner, setShowEcoBanner] = useState(true);
 
+  // 알림 뱃지 활성화 상태
+  const [hasNotifications, setHasNotifications] = useState(false);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       // 1. URL 쿼리 파라미터(?token=...&onboarded=...) 추출 및 로컬 스토리지 보관
@@ -54,6 +57,17 @@ export default function Home() {
       if (isBannerClosed) {
         setShowEcoBanner(false);
       }
+
+      // 알림 수신 내역 백그라운드 체크 (뱃지 활성화용)
+      const checkNotifications = async () => {
+        try {
+          const requests = await friendApi.getReceivedRequests();
+          setHasNotifications(requests.length > 0);
+        } catch (e) {
+          console.error("Failed to check notifications", e);
+        }
+      };
+      checkNotifications();
 
       // 2. 온보딩 데이터 로드 및 백엔드 동기화
       const dataStr = localStorage.getItem("dangsquare_onboarding");
@@ -137,6 +151,18 @@ export default function Home() {
       <header className={styles.headerBlock}>
         <div className={styles.logoText}>Dangsquare</div>
         <div className={styles.headerActions}>
+          {/* 메시지 아이콘 */}
+          <button 
+            type="button" 
+            className={styles.iconBtn}
+            onClick={() => router.push("/chat")}
+            aria-label="메시지함 열기"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </button>
+
           {/* 검색 아이콘 */}
           <button 
             type="button" 
@@ -153,13 +179,14 @@ export default function Home() {
           <button 
             type="button" 
             className={styles.iconBtn}
-            onClick={() => handleFeatureAlert("실시간 알림")}
+            onClick={() => router.push("/notifications")}
+            aria-label="알림함 열기"
           >
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.3">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            <span className={styles.alarmDot}></span>
+            {hasNotifications && <span className={styles.alarmDot}></span>}
           </button>
         </div>
       </header>

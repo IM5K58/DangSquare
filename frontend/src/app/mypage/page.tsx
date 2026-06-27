@@ -7,10 +7,13 @@ import FooterBar from "@/components/FooterBar";
 import {
   ApiError,
   userApi,
+  friendApi,
+  chatApi,
   type DogTemperament,
   type Gender,
   type UserMeDto,
   type UserUpdatePayload,
+  type FriendResponse,
 } from "@/lib/api";
 import { clearAuth, getToken } from "@/lib/auth";
 
@@ -99,6 +102,10 @@ export default function MyPage() {
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<OnboardingData | null>(null);
+
+  // 친구 목록 상태
+  const [friends, setFriends] = useState<FriendResponse[]>([]);
+  const [loadingFriends, setLoadingFriends] = useState(true);
   
   // 프로필 수정 모달 상태 (profile: 전체 모달, 개별 필드 이름: 개별 모달)
   const [activeEditField, setActiveEditField] = useState<"profile" | "ownerName" | "ownerGender" | "dogName" | "dogBreed" | "dogPersonality" | null>(null);
@@ -182,6 +189,27 @@ export default function MyPage() {
       cancelled = true;
     };
   }, [router]);
+
+  // 친구 목록 로드 훅
+  useEffect(() => {
+    if (typeof window !== "undefined" && getToken()) {
+      let cancelled = false;
+      const loadFriends = async () => {
+        try {
+          const list = await friendApi.getFriends();
+          if (!cancelled) setFriends(list);
+        } catch (e) {
+          console.error("Failed to load friend list", e);
+        } finally {
+          if (!cancelled) setLoadingFriends(false);
+        }
+      };
+      loadFriends();
+      return () => {
+        cancelled = true;
+      };
+    }
+  }, []);
 
   // 백엔드 PATCH 헬퍼: 현재 폼 상태로 프로필을 갱신하고 로컬 캐시도 동기화.
   const persistUpdate = async (next: OnboardingData): Promise<boolean> => {
@@ -578,6 +606,46 @@ export default function MyPage() {
               </div>
             </div>
           </div>
+
+          {/* 👥 내 반려견 친구들 목록 섹션 */}
+          <div className={styles.sectionLabelRow}>
+            <div className={styles.sectionLabel}>내 반려견 친구들 ({friends.length}명)</div>
+          </div>
+          
+          {loadingFriends ? (
+            <div className={styles.friendLoading}>친구 정보를 불러오는 중...</div>
+          ) : friends.length === 0 ? (
+            <div className={styles.friendEmpty}>아직 등록된 친구가 없어요. 🐶</div>
+          ) : (
+            <div className={styles.friendListScroll}>
+              {friends.map((friend) => (
+                <div 
+                  key={friend.userId} 
+                  className={styles.friendItemCard}
+                  onClick={async () => {
+                    try {
+                      const res = await chatApi.createRoom(friend.userId);
+                      router.push(`/chat/${res.roomId}`);
+                    } catch (e) {
+                      console.error("Failed to open chat from friends list", e);
+                      alert("대화방을 생성할 수 없습니다.");
+                    }
+                  }}
+                >
+                  <div className={styles.friendAvatarWrapper}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={friend.profileImageUrl || "/dangsquare_mascot_official.png"} 
+                      alt={friend.nickname} 
+                      className={styles.friendAvatar} 
+                    />
+                    {friend.online && <span className={styles.friendOnlineDot}></span>}
+                  </div>
+                  <span className={styles.friendName}>{friend.nickname}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* More Settings Section */}
           <div className={styles.sectionLabelRow}>

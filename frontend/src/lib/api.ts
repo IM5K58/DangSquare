@@ -275,3 +275,83 @@ export const uploadApi = {
       { method: "POST", body: { fileName, contentType } }
     ),
 };
+
+// 1:1 채팅(chat)
+export type ChatPartnerDto = {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string | null;
+};
+
+export type ChatRoomResponse = {
+  roomId: number;
+  partner: ChatPartnerDto;
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+};
+
+export type MessageResponse = {
+  messageId: number;
+  senderId: number;
+  content: string;
+  createdAt: string;
+};
+
+export const chatApi = {
+  getRooms: () =>
+    request<ChatRoomResponse[]>("/chat/rooms"),
+  createRoom: (targetUserId: number) =>
+    request<{ roomId: number }>("/chat/rooms", {
+      method: "POST",
+      body: { targetUserId },
+    }),
+  getMessages: (roomId: number, page = 0, size = 20) =>
+    request<PageResponse<MessageResponse>>(
+      `/chat/rooms/${roomId}/messages?page=${page}&size=${size}`
+    ),
+  sendMessage: (roomId: number, content: string) =>
+    request<MessageResponse>(`/chat/rooms/${roomId}/messages`, {
+      method: "POST",
+      body: { content },
+    }),
+};
+
+// 친구 및 매칭 (friends)
+export type FriendUserDto = {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string | null;
+};
+
+export type FriendRequestItem = {
+  requestId: number;
+  user: FriendUserDto;
+  createdAt: string;
+};
+
+export const friendApi = {
+  sendRequest: (addresseeId: number) =>
+    request<{ requestId: number; status: string }>("/friends/requests", {
+      method: "POST",
+      body: { addresseeId },
+    }),
+  acceptRequest: (requestId: number) =>
+    request<any>(`/friends/requests/${requestId}/accept`, {
+      method: "POST",
+    }),
+  rejectRequest: (requestId: number) =>
+    request<any>(`/friends/requests/${requestId}/reject`, {
+      method: "POST",
+    }),
+  getReceivedRequests: () =>
+    request<FriendRequestItem[]>("/friends/requests/received"),
+  getFriends: () =>
+    request<FriendResponse[]>("/friends"),
+};
+
+export type FriendResponse = {
+  userId: number;
+  nickname: string;
+  profileImageUrl: string | null;
+  online: boolean;
+};
