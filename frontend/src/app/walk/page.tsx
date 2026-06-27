@@ -74,9 +74,9 @@ export default function WalkPage() {
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
 
-  // 위치 상태 (기본값: 용산역)
-  const [latitude, setLatitude] = useState(37.529896);
-  const [longitude, setLongitude] = useState(126.964703);
+  // 위치 상태 (기본값: 피그마 시안과 연동되는 흑석동)
+  const [latitude, setLatitude] = useState(37.5055);
+  const [longitude, setLongitude] = useState(126.9625);
   const [locationLoaded, setLocationLoaded] = useState(false);
 
   // 내 산책 상태 ("possible" | "resting" | "impossible")
@@ -157,28 +157,54 @@ export default function WalkPage() {
     refreshHealth();
   }, [router, refreshHealth]);
 
-  // 2. Geolocation 사용자 위치 확보
+  // 2. Geolocation 사용자 실시간 트래킹 (watchPosition 및 모바일/웹 호환성 최적화)
   useEffect(() => {
-    console.log("[Home] Geolocation useEffect fired. locationLoaded:", locationLoaded);
-    if (typeof window !== "undefined" && navigator.geolocation) {
-      console.log("[Home] Requesting geolocation...");
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          console.log("[Home] Geolocation SUCCESS:", position.coords.latitude, position.coords.longitude);
-          setLatitude(position.coords.latitude);
-          setLongitude(position.coords.longitude);
-          setLocationLoaded(true);
-        },
-        (error) => {
-          console.warn("[Home] Geolocation FAILED, using default (Yongsan):", error.message);
-          setLocationLoaded(true);
-        },
-        { enableHighAccuracy: true, timeout: 3000 }
-      );
-    } else {
-      console.warn("[Home] Geolocation API not available. Using default.");
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      console.warn("[WalkPage] Geolocation API not available. Using default.");
       setLocationLoaded(true);
+      return;
     }
+
+    console.log("[WalkPage] Starting real-time location watch...");
+    
+    // 1회성 빠른 실시간 좌표 획득 시도 (PC 웹 환경 타임아웃 방지를 위해 고정밀 일시 해제 및 캐시 활용)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        console.log("[WalkPage] Initial getCurrentPosition SUCCESS:", position.coords.latitude, position.coords.longitude);
+        setLatitude(position.coords.latitude);
+        setLongitude(position.coords.longitude);
+        setLocationLoaded(true);
+      },
+      (error) => {
+        console.warn("[WalkPage] Initial getCurrentPosition FAILED, fallback to watchPosition:", error.message);
+        // 단발성 획득 실패 시에도 감시(watch)로 전환되므로 로드는 진행
+        setLocationLoaded(true);
+      },
+      { enableHighAccuracy: false, timeout: 6000, maximumAge: 60000 }
+    );
+
+    // 실시간 위치 움직임 감지 트래커 가동
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        console.log("[WalkPage] Location Updated (watchPosition):", position.coords.latitude, position.coords.longitude);
+        setLatitude(position.coords.latitude);
+        setLongitude(position.coords.longitude);
+        setLocationLoaded(true);
+      },
+      (error) => {
+        console.error("[WalkPage] watchPosition FAILED:", error.message);
+      },
+      {
+        enableHighAccuracy: false, // 일반 데스크탑 브라우저 호환성을 위해 우선 순위 안정화
+        timeout: 15000,
+        maximumAge: 10000
+      }
+    );
+
+    return () => {
+      console.log("[WalkPage] Stopping location watch.");
+      navigator.geolocation.clearWatch(watchId);
+    };
   }, []);
 
   // 3. 위치 좌표가 확정되면 서버에 좌표를 갱신하고 근처/지도 사용자 폴링.
