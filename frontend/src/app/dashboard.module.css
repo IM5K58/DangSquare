@@ -10,6 +10,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100%;
   background-color: #f9fafb;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: #111827;
@@ -285,7 +286,9 @@
   gap: 4px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
   z-index: 3;
-  white-space: nowrap;
+  width: max-content;
+  max-width: 90%;
+  text-align: center;
 }
 
 .mapBubble span {
@@ -441,4 +444,79 @@
   font-weight: 700;
   margin-top: 10px;
   align-self: flex-start;
+}
+
+/* 모바일 뷰포트 최적화 미디어 쿼리 */
+@media (max-width: 400px) {
+  .content {
+    padding: 16px;
+  }
+  
+  .greetingRow {
+    margin-bottom: 16px;
+  }
+
+  .userNameText {
+    font-size: 18px;
+  }
+
+  .walkBadge {
+    padding: 6px 12px;
+    border-radius: 10px;
+  }
+
+  .walkBadgeNum {
+    font-size: 18px;
+  }
+
+  .ecoBanner {
+    padding: 16px;
+    gap: 12px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+  }
+
+  .ecoTitle {
+    font-size: 14px;
+  }
+
+  .ecoDesc {
+    font-size: 11px;
+    margin-bottom: 12px;
+  }
+
+  .ecoDogImg {
+    width: 75px;
+    height: 75px;
+  }
+
+  .ecoRight {
+    width: 80px;
+    height: 80px;
+  }
+
+  .mapCard {
+    height: 160px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+  }
+
+  .mapBubble {
+    font-size: 10px;
+    padding: 6px 12px;
+  }
+
+  .postCard {
+    flex: 0 0 210px;
+    padding: 12px;
+    height: 140px;
+  }
+
+  .postTitle {
+    font-size: 13px;
+  }
+
+  .postDesc {
+    font-size: 11px;
+  }
 }

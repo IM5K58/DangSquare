@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getToken } from "@/lib/auth";
+import { getToken, consumeAuthFromQuery } from "@/lib/auth";
+import { userApi } from "@/lib/api";
 import styles from "./dashboard.module.css";
 import FooterBar from "@/components/FooterBar";
 
@@ -33,8 +34,11 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const onboarded = localStorage.getItem("dangsquare_onboarded") === "true";
+      // 1. URL 쿼리 파라미터(?token=...&onboarded=...) 추출 및 로컬 스토리지 보관
+      const { onboarded: queryOnboarded } = consumeAuthFromQuery();
+      
       const token = getToken();
+      const onboarded = queryOnboarded || localStorage.getItem("dangsquare_onboarded") === "true";
 
       if (!token) {
         router.push("/onboarding");
@@ -45,23 +49,62 @@ export default function Home() {
         return;
       }
 
-      // 온보딩 데이터 로드
-      const dataStr = localStorage.getItem("dangsquare_onboarding");
-      if (dataStr) {
-        try {
-          setOnboardingData(JSON.parse(dataStr));
-        } catch (e) {
-          console.error("Failed to parse onboarding data", e);
-        }
-      }
-
-      // 에코 배너의 로컬스토리지 닫기 상태 검사
+      // 에코 배너 닫힘 여부 체크
       const isBannerClosed = localStorage.getItem("dangsquare_eco_banner_closed") === "true";
       if (isBannerClosed) {
         setShowEcoBanner(false);
       }
 
-      setCheckingOnboarding(false);
+      // 2. 온보딩 데이터 로드 및 백엔드 동기화
+      const dataStr = localStorage.getItem("dangsquare_onboarding");
+      if (dataStr) {
+        try {
+          setOnboardingData(JSON.parse(dataStr));
+          setCheckingOnboarding(false);
+        } catch (e) {
+          console.error("Failed to parse onboarding data", e);
+          setCheckingOnboarding(false);
+        }
+      } else {
+        // 기존 회원이 새 기기/세션으로 로그인하여 캐시가 없는 경우 백엔드에서 사용자 데이터를 가져옴
+        const syncOnboardingCache = async () => {
+          try {
+            const userMe = await userApi.me();
+            if (userMe) {
+              const firstDog = userMe.dogs && userMe.dogs.length > 0 ? userMe.dogs[0] : null;
+              const syncedData: OnboardingData = {
+                owner: {
+                  name: userMe.nickname || "견주",
+                  gender: userMe.gender === "MALE" ? "male" : userMe.gender === "FEMALE" ? "female" : "",
+                },
+                dog: firstDog ? {
+                  name: firstDog.name,
+                  gender: firstDog.gender === "MALE" ? "male" : firstDog.gender === "FEMALE" ? "female" : "",
+                  breed: firstDog.breed || "",
+                  personality: firstDog.temperament === "ACTIVE" ? "active" : firstDog.temperament === "FRIENDLY" ? "warm" : firstDog.temperament === "SHY" ? "shy" : "",
+                  photo: firstDog.imageUrl || null,
+                } : {
+                  name: "강아지",
+                  gender: "",
+                  breed: "",
+                  personality: "",
+                  photo: null,
+                },
+                completedAt: new Date().toISOString(),
+              };
+              localStorage.setItem("dangsquare_onboarding", JSON.stringify(syncedData));
+              localStorage.setItem("dangsquare_onboarded", "true");
+              setOnboardingData(syncedData);
+            }
+          } catch (e) {
+            console.error("Failed to sync user onboarding data from backend", e);
+          } finally {
+            setCheckingOnboarding(false);
+          }
+        };
+
+        syncOnboardingCache();
+      }
     }
   }, [router]);
 
