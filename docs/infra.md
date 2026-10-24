@@ -15,7 +15,7 @@
      `DefaultCredentialsProvider`가 **instance metadata에서 자동 획득**하게 한다.
 4. **S3 버킷 이름은 항상 `{username}`으로 시작.**
 
----
+----
 
 ## 1. 권장 배포 구성
 
